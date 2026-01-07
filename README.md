@@ -49,3 +49,157 @@ Sarah wants to park in parking area 101. Here's how the system works:
     - Automatically updates Spot 3 status to available (changes back to green checkmark)
     - Makes the spot ready for the next customer
 
+---
+
+### **Modeling Entities**
+
+In a real-world scenario (like **Area 101** shown in the image), a parking system would involve several complex entities. Below is an overview of how we can model these entities:
+
+1. **Parking Lot**: To group parking spots and manage capacity (e.g., a lot containing spots 1 to 10).
+2. **Vehicle**: To store more details like brand, model, and color (currently simplified as a string in `Customer`).
+3. **Customer**: Represents the user of the parking service.
+4. **Parking Spot**: Represents the physical space for parking (identified by a spot number).
+5. **Reservation**: Tracks the booking and occupancy details.
+6. **Address**: To store location details for the company or its parking lot.
+
+### **Class Diagram**
+
+```mermaid
+classDiagram
+   class ParkingLot {
+      -String lotId
+      -Address address
+      -List~ParkingSpot~ spots
+   }
+   class Address {
+      -String street
+      -String city
+      -String zipCode
+   }
+   class Vehicle {
+      -String plateNumber
+      -String brand
+      -String model
+      -String color
+   }
+   class Customer {
+      -Integer id
+      -String name
+      -String phoneNumber
+   }
+   class ParkingSpot {
+      -Integer spotNumber
+      -Integer areaCode
+      -boolean occupied
+      +occupy()
+      +vacate()
+   }
+   class Reservation {
+      -String reservationId
+      -LocalDateTime startTime
+      -LocalDateTime endTime
+      -Status status
+      -ParkingSpot parkingSpot
+      -Customer customer
+      +complete()
+      +setDurationInHours(int hours)
+   }
+   class Status {
+      <<enumeration>>
+      ACTIVE
+      COMPLETED
+   }
+
+   ParkingLot "1" --> "1" Address: located at
+   ParkingLot "1" --> "*" ParkingSpot: contains
+   Reservation "*" --> "1" Customer: made by
+   Reservation "*" --> "1" ParkingSpot: reserves
+   Reservation "1" --> "1" Status: has
+   Customer "1" --> "0..1" Vehicle: owns
+```
+
+### **Simplified Class Diagram**
+
+```mermaid
+classDiagram
+    class Customer {
+        -Integer id
+        -String name
+        -String phoneNumber
+        -String vehiclePlatNumber
+    }
+    class ParkingSpot {
+        -Integer spotNumber
+        -Integer areaCode
+        -boolean occupied
+        +occupy()
+        +vacate()
+    }
+    class Reservation {
+        -String reservationId
+        -LocalDateTime startTime
+        -LocalDateTime endTime
+        -Status status
+        -ParkingSpot parkingSpot
+        -Customer customer
+        +complete()
+        +setDurationInHours(int hours)
+    }
+    class Status {
+        <<enumeration>>
+        ACTIVE
+        COMPLETED
+    }
+
+    Reservation "*" --> "1" Customer: made by
+    Reservation "*" --> "1" ParkingSpot: reserves
+    Reservation "1" --> "1" Status: has
+```
+
+To keep it simple and focused on the core logic, we have implemented the following:
+
+1. **Customer**:
+   - **Purpose**: Represents an individual who uses the parking services.
+   - `id`: A unique identifier for the customer.
+   - `name`: The customer's full name.
+   - `phoneNumber`: Contact information for the customer.
+   - `vehiclePlatNumber`: The plate number of the vehicle associated with the customer.
+
+2. **Parking Spot**:
+   - **Purpose**: Represents a physical space in the parking lot where a vehicle can be parked (e.g., Spot 1, 2, or 3 in **Area 101**).
+   - `spotNumber`: A unique identifier for the parking spot.
+   - `areaCode`: A code representing the specific section or area where the spot is located (e.g., 101).
+   - `occupied`: A boolean status indicating whether the spot is currently taken or available.
+
+3. **Reservation**:
+   - **Purpose**: Acts as a contract between a customer and a parking spot for a specific duration.
+   - `reservationId`: A unique identifier generated for each booking.
+   - `startTime`: The exact date and time when the reservation begins.
+   - `endTime`: The scheduled date and time when the reservation expires.
+   - `customer`: The customer who made the reservation.
+   - `parkingSpot`: The specific spot assigned to the reservation.
+   - `status`: The current state of the reservation (e.g., ACTIVE, COMPLETED).
+
+---
+
+### **Core Functionalities**
+
+1. **Customer Management**:
+   - Register customers with unique identifiers.
+   - Validate customer information, including name and phone number formats.
+   - Associate a vehicle plate number with each customer.
+
+2. **Parking Spot Management**:
+   - Maintain a list of parking spots to represent the parking lot.
+   - Track the availability of parking spots in real-time.
+   - Organize spots by area codes for better categorization.
+   - Ability to mark spots as occupied or vacant (automatically handled by the Reservation system).
+
+3. **Reservation System**:
+   - Create reservations linking customers to specific parking spots.
+   - Automatically generate unique reservation IDs.
+   - Set reservation duration (in hours) and calculate end times.
+   - Track the status of reservations (ACTIVE, COMPLETED, CANCELLED).
+   - Complete reservations, which automatically updates the status.
+
+---
